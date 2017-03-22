@@ -109,12 +109,12 @@ class ProfileForm(forms.ModelForm):
 
 
 class ChangePasswordMixin:
-    def clean_password1(self):
+    def clean_password(self):
         if not self.user.change_pw:
             raise forms.ValidationError(_("The password for this user can not "
                                           "be changed."))
 
-        password = self.cleaned_data['password1']
+        password = self.cleaned_data['password']
         validate_password(password, user=self.user)
 
         username = self.user.username
@@ -125,14 +125,34 @@ class ChangePasswordMixin:
         return password
 
 
-class ChangePasswordForm(ChangePasswordMixin,
-                         allauth_forms.ChangePasswordForm):
-    pass
+class ChangePasswordForm(ChangePasswordMixin, 
+                         allauth_forms.UserForm):
+
+    oldpassword = allauth_forms.PasswordField(label=_("Current Password"))
+    password = allauth_forms.SetPasswordField(label=_("New Password"))
+
+    def clean_oldpassword(self):
+        if not self.user.check_password(self.cleaned_data.get("oldpassword")):
+            raise forms.ValidationError(_("Please type your current"
+                                          " password."))
+        return self.cleaned_data["oldpassword"]
+
+    def save(self):
+        allauth_forms.get_adapter().set_password(self.user, self.cleaned_data["password"])
 
 
 class ResetPasswordKeyForm(ChangePasswordMixin,
-                           allauth_forms.ResetPasswordKeyForm):
-    pass
+                           forms.Form):
+
+    password = allauth_forms.SetPasswordField(label=_("New Password"))
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        self.temp_key = kwargs.pop("temp_key", None)
+        super(ResetPasswordKeyForm, self).__init__(*args, **kwargs)
+
+    def save(self):
+        allauth_forms.get_adapter().set_password(self.user, self.cleaned_data["password"])
 
 
 class ResetPasswordForm(allauth_forms.ResetPasswordForm):
