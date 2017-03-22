@@ -170,6 +170,22 @@ class ImportValidatorTest(TestCase):
                 headers, row, config)
         assert e.value.message == "Invalid geometry."
 
+    def test_validate_empty_geometry(self):
+        config = {
+            'party_name_field': 'party_name',
+            'party_type_field': 'party_type',
+            'geometry_field': 'location_geometry',
+            'type': 'csv'
+        }
+        geometry = 'POLYGON EMPTY'
+        headers = [
+            'party_name', 'party_type', 'location_geometry']
+        row = ['Party Name', 'IN', geometry]
+        with pytest.raises(ValidationError) as e:
+            validators.validate_row(
+                headers, row, config)
+        assert e.value.message == "Empty 'geometry_field' value found."
+
     def test_validate_location_type_choice(self):
         config = {
             'party_name_field': 'party_name',
