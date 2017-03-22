@@ -41,6 +41,11 @@ def validate_row(headers, row, config):
             geometry = GEOSGeometry(coords)
         except:
             pass  # try ODK geom parser
+        else:
+            if geometry.empty:
+                raise ValidationError(
+                    _("Empty 'geometry_field' value found.")
+                )
         if not geometry:
             try:
                 geometry = odk_geom_to_wkt(coords)
