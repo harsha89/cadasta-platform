@@ -368,6 +368,20 @@ class ChangePasswordFormTest(UserTestCase, TestCase):
 
         assert user.check_password('iloveyoko79!') is True
 
+    def test_password_incorrect(self):
+        user = UserFactory.create(
+            password='beatles4Lyfe!', username='imagine71')
+
+        data = {
+            'oldpassword': 'th3m0nkeesRule!!',
+            'password': 'l3titb3333!',
+        }
+        form = forms.ChangePasswordForm(user, data)
+
+        assert form.is_valid() is False
+        assert (_("Please type your current password.") in
+                form.errors.get('oldpassword'))
+
     def test_password_contains_username(self):
         user = UserFactory.create(
             password='beatles4Lyfe!', username='imagine71')
