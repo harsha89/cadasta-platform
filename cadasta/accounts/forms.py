@@ -124,6 +124,10 @@ class ChangePasswordMixin:
 
         return password
 
+    def save(self):
+        allauth_forms.get_adapter().set_password(
+            self.user, self.cleaned_data["password"])
+
 
 class ChangePasswordForm(ChangePasswordMixin,
                          allauth_forms.UserForm):
@@ -137,10 +141,6 @@ class ChangePasswordForm(ChangePasswordMixin,
                                           " password."))
         return self.cleaned_data["oldpassword"]
 
-    def save(self):
-        allauth_forms.get_adapter().set_password(
-            self.user, self.cleaned_data["password"])
-
 
 class ResetPasswordKeyForm(ChangePasswordMixin,
                            forms.Form):
@@ -151,10 +151,6 @@ class ResetPasswordKeyForm(ChangePasswordMixin,
         self.user = kwargs.pop("user", None)
         self.temp_key = kwargs.pop("temp_key", None)
         super(ResetPasswordKeyForm, self).__init__(*args, **kwargs)
-
-    def save(self):
-        allauth_forms.get_adapter().set_password(
-            self.user, self.cleaned_data["password"])
 
 
 class ResetPasswordForm(allauth_forms.ResetPasswordForm):
